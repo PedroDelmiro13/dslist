@@ -3,6 +3,7 @@ package com.projetospring.dslist.services;
 import java.util.List;
 
 import com.projetospring.dslist.entities.Game;
+import com.projetospring.dslist.projections.GameMinProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,19 @@ public class GameListService {
         List<GameList> result = gameListRepository.findAll();
         return result.stream().map(GameListDTO::new).toList();
     }
+    @Transactional
+    public void move(Long listId, int sourceIndex, int destinationIndex){
+        List<GameMinProjection> list = gameRepository.searchByList(listId);
 
+        GameMinProjection obj = list.remove(sourceIndex);
+        list.add(destinationIndex, obj);
+
+        int min = sourceIndex < destinationIndex ? sourceIndex : destinationIndex;
+        int max = sourceIndex > destinationIndex ? sourceIndex : destinationIndex;
+
+        for(int i = min; i <= max; i++){
+            gameListRepository.updateBelongingPosition(listId, list.get(i).getId(), i);
+        }
+    }
 }
 
